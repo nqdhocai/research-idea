@@ -1,117 +1,139 @@
+## **1. Mục tiêu**
+- Phát triển một mô hình RL có khả năng:
+  - Đánh giá đặc điểm của từng nhóm lớp nhỏ (subgroups of layers).
+  - Tự động điều chỉnh tỷ lệ cắt tỉa cho từng nhóm lớp dựa trên thông tin cục bộ và toàn cục.
+  - Giảm thiểu suy giảm hiệu suất và tối ưu hóa tài nguyên tính toán.
+
 ---
 
+## **2. Phương pháp**
+
+### **2.1. Chia mô hình thành các nhóm lớp nhỏ**
+- **Nguyên tắc chia nhóm:**
+  - Chia mô hình thành các nhóm lớp nhỏ (ví dụ: nhóm các lớp liên tiếp hoặc nhóm theo chức năng, như attention blocks và Feed-Forward Networks - FFNs).
+  - Mỗi nhóm lớp sẽ được coi là một "đơn vị" để áp dụng RL.
+
+- **Lợi ích:**
+  - Giảm độ phức tạp của bài toán RL bằng cách tập trung vào từng nhóm lớp nhỏ thay vì toàn bộ mô hình.
+  - Cho phép tối ưu hóa cục bộ (local optimization) mà vẫn duy trì được hiệu suất tổng thể của mô hình.
 
 ---
 
-<p><strong>1. Tên Đề Tài:</strong></p>
-<ul>
-<li><strong>Tối ưu hóa Mô hình Ngôn ngữ Lớn Bằng Phương Pháp Phân Rã Ma Trận Dựa Trên Học Tăng Cường</strong> (<em>Reinforcement Learning for Low-Rank Approximation of Weight Matrices in Large Language Models</em>)</li>
-</ul>
-<p><strong>2. Tóm Tắt Ý Tưởng:</strong></p>
-<ul>
-<li><strong>Mục tiêu:</strong> Phát triển một phương pháp mới sử dụng RL để tự động tìm kiếm các xấp xỉ bậc thấp của ma trận trọng số trong LLM, nhằm giảm kích thước mô hình và tăng hiệu quả tính toán, đồng thời giữ được hiệu suất tốt.</li>
-<li><strong>Phương pháp:</strong> Sử dụng một agent RL để học cách:
-<ul>
-<li><strong>Phân rã ma trận:</strong> Quyết định ma trận nào cần phân rã và chọn thuật toán phân rã phù hợp.</li>
-<li><strong>Chọn lớp:</strong> Quyết định lớp nào nên được áp dụng phân rã.</li>
-<li><strong>Lựa chọn thành phần:</strong> Lựa chọn các ma trận con (sub-matrices) sau khi phân rã để giữ lại.</li>
-<li><strong>Tối ưu hóa hiệu suất:</strong> Mục tiêu cuối cùng là tối ưu hiệu suất mô hình trên tập dữ liệu xếp hạng (RkD và VRkD) và tối thiểu việc giảm độ chính xác của mô hình.</li>
-</ul>
-</li>
-</ul>
-<p><strong>3. Kế Hoạch Nghiên Cứu Chi Tiết:</strong></p>
-<p><strong>Giai đoạn 1: Nghiên cứu Cơ Sở &amp; Thiết Kế Agent RL</strong></p>
-<ul>
-<li><strong>Nghiên cứu tài liệu:</strong>
-<ul>
-<li>Các kỹ thuật nén mô hình LLM (pruning, quantization, low-rank factorization).</li>
-<li>Ứng dụng RL trong tối ưu hóa kiến trúc neural network (Neural Architecture Search).</li>
-<li>Các thuật toán phân rã ma trận (SVD, CUR decomposition, NMF…).</li>
-</ul>
-</li>
-<li><strong>Thiết kế agent RL:</strong>
-<ul>
-<li><strong>Không gian trạng thái (State Space):</strong> Thông tin về mô hình (kích thước ma trận, độ quan trọng của layer…), độ chính xác trên RkD/VRkD.</li>
-<li><strong>Không gian hành động (Action Space):</strong> Lựa chọn ma trận để phân rã, thuật toán phân rã, rank để sử dụng, ma trận con nào để giữ lại hoặc loại bỏ.</li>
-<li><strong>Hàm thưởng (Reward function):</strong> Dựa trên hiệu suất trên RkD/VRkD, giảm kích thước mô hình và một hình phạt (penalty) để đảm bảo tính ổn định trong huấn luyện. Hàm reward cuối cùng sẽ sử dụng performance (đánh giá từ VRkD) so với các layer gốc.</li>
-</ul>
-</li>
-<li><strong>Lựa chọn thuật toán RL:</strong>
-<ul>
-<li>Các thuật toán như policy gradient (e.g., REINFORCE, PPO, A2C) hoặc Q-learning (e.g., DQN) có thể phù hợp. Nên chọn một thuật toán phổ biến và có tính ổn định để bắt đầu.</li>
-</ul>
-</li>
-</ul>
-<p><strong>Giai đoạn 2: Xây dựng và Huấn Luyện Agent RL</strong></p>
-<ul>
-<li><strong>Chuẩn bị dữ liệu:</strong>
-<ul>
-<li>Tạo bộ dữ liệu RkD và VRkD.</li>
-<li>Xác định mô hình LLM cơ sở (ví dụ: một mô hình nhỏ hơn, có sẵn).</li>
-</ul>
-</li>
-<li><strong>Huấn luyện:</strong>
-<ul>
-<li>Huấn luyện agent RL để chọn phân rã tốt nhất và lựa chọn sub-matrix.</li>
-<li>Thực hiện đánh giá hiệu suất thường xuyên trong quá trình huấn luyện.</li>
-<li>Theo dõi các thông số và hàm thưởng của RL.</li>
-</ul>
-</li>
-</ul>
-<p><strong>Giai đoạn 3: Đánh Giá &amp; So Sánh Kết Quả</strong></p>
-<ul>
-<li><strong>Đánh giá:</strong>
-<ul>
-<li>Kiểm tra hiệu suất của mô hình sau khi tối ưu hóa bằng RL trên tập dữ liệu kiểm tra.</li>
-<li>So sánh kết quả với mô hình LLM gốc và các phương pháp tối ưu khác (nếu có).</li>
-<li>Phân tích chi tiết về tính toán, lượng parameters, hiệu quả lưu trữ.</li>
-</ul>
-</li>
-<li><strong>Thử nghiệm bổ sung:</strong>
-<ul>
-<li>Thử nghiệm trên các mô hình LLM và tập dữ liệu khác nhau.</li>
-<li>Điều chỉnh các thông số và các siêu tham số (hyperparameter) để tìm ra cấu hình tốt nhất.</li>
-</ul>
-</li>
-<li><strong>Viết báo cáo:</strong>
-<ul>
-<li>Trình bày phương pháp, kết quả thực nghiệm, đánh giá và phân tích một cách rõ ràng.</li>
-</ul>
-</li>
-</ul>
-<p><strong>4. Tính Khả Thi, Thách Thức và Khó Khăn:</strong></p>
-<ul>
-<li>
-<p><strong>Tính Khả Thi:</strong></p>
-<ul>
-<li>Ý tưởng có cơ sở khoa học vững chắc và tiềm năng mang lại những đóng góp có giá trị cho lĩnh vực LLM.</li>
-<li>Các thuật toán và công cụ cần thiết cho nghiên cứu này đều có sẵn.</li>
-<li>Các LLM nguồn mở đủ lớn hiện tại để chạy các testbed cho nghiên cứu của bạn.</li>
-</ul>
-</li>
-<li>
-<p><strong>Thách Thức:</strong></p>
-<ul>
-<li><strong>Không gian hành động lớn:</strong> Không gian hành động cho agent RL có thể rất lớn, dẫn đến thời gian huấn luyện dài và khó khăn trong việc khám phá không gian tối ưu.</li>
-<li><strong>Hàm thưởng:</strong> Thiết kế một hàm thưởng hiệu quả, cân bằng giữa việc giảm kích thước mô hình, tăng tốc độ tính toán, và đảm bảo độ chính xác của mô hình là một thách thức lớn.</li>
-<li><strong>Sự ổn định của RL:</strong> Huấn luyện các agent RL đôi khi không ổn định và cần nhiều thử nghiệm để tìm ra các thông số tối ưu.</li>
-<li><strong>Thời gian:</strong> Yêu cầu một lượng lớn thời gian, sức lực và tài nguyên tính toán.</li>
-<li><strong>Kiểm tra tổng quát (generalize):</strong> Để mô hình đạt kết quả tối ưu, sự thay đổi dữ liệu và kiến trúc của model cũng có thể gây trở ngại và phải mất nhiều thời gian thử nghiệm.</li>
-</ul>
-</li>
-<li>
-<p><strong>Khó khăn:</strong></p>
-<ul>
-<li><strong>Đảm bảo tính toàn vẹn của dữ liệu:</strong> Xây dựng RkD và VRkD cần chất lượng cao và sự cẩn thận để đảm bảo kết quả đáng tin cậy.</li>
-<li><strong>Tính toán phức tạp:</strong> Quá trình phân rã ma trận và huấn luyện agent RL có thể đòi hỏi tài nguyên tính toán lớn, cần cân nhắc và lựa chọn phương pháp hiệu quả.</li>
-<li><strong>Cân bằng hiệu suất và kích thước:</strong> Cần cân nhắc trade-off giữa giảm kích thước mô hình và giữ độ chính xác tốt.</li>
-</ul>
-</li>
-</ul>
-<p><strong>5. Đóng Góp Dự Kiến:</strong></p>
-<ul>
-<li>Phát triển phương pháp tối ưu hóa LLM bằng RL mới, hiệu quả.</li>
-<li>Góp phần giảm kích thước, chi phí tính toán và tăng tốc độ hoạt động của các LLM.</li>
-<li>Mở ra hướng nghiên cứu mới về tối ưu hóa kiến trúc LLM dựa trên RL.</li>
-</ul>
+### **2.2. Xây dựng môi trường RL (Environment)**
+- **Trạng thái (State):**
+  - Trạng thái của môi trường bao gồm các thông tin về:
+    - Đặc điểm của từng nhóm lớp (ví dụ: kích thước ma trận trọng số, gradient, độ quan trọng của các tham số).
+    - Tổng số lượng tham số đã bị cắt tỉa so với mục tiêu tổng thể.
+    - Hiệu suất hiện tại của mô hình (ví dụ: Perplexity hoặc độ chính xác trên tập dữ liệu hiệu chuẩn).
 
+- **Hành động (Action):**
+  - Hành động là tỷ lệ cắt tỉa cho từng nhóm lớp tại mỗi bước thời gian \(t\).
+  - Ví dụ: Nếu có \(k\) nhóm lớp, hành động \(A_t\) sẽ là một vector \(k\)-chiều, trong đó mỗi phần tử đại diện cho tỷ lệ cắt tỉa của một nhóm lớp cụ thể.
+
+- **Phần thưởng (Reward):**
+  - Phần thưởng được thiết kế để khuyến khích RL tối ưu hóa hai mục tiêu:
+    1. **Giảm thiểu suy giảm hiệu suất:** Phần thưởng dương nếu hiệu suất của mô hình không bị suy giảm đáng kể sau khi cắt tỉa.
+    2. **Tối ưu hóa tỷ lệ cắt tỉa:** Phần thưởng dương nếu tỷ lệ cắt tỉa đạt gần với mục tiêu đề ra mà không làm giảm hiệu suất.
+
+---
+
+### **2.3. Thiết kế tác nhân RL (Agent)**
+- **Kiến trúc mạng nơ-ron:**
+  - Sử dụng một mạng nơ-ron sâu (Deep Neural Network - DNN) để biểu diễn hàm chính sách (\( \pi \)) của tác nhân RL.
+  - Đầu vào của mạng là trạng thái \(S_t\), đầu ra là hành động \(A_t\) (tỷ lệ cắt tỉa cho từng nhóm lớp).
+
+- **Thuật toán RL:**
+  - **Proximal Policy Optimization (PPO)** 
+  - **Group Relative Policy Optimization (GRPO)** 
+  - 
+---
+
+### **2.4. Quy trình huấn luyện RL**
+1. **Khởi tạo:**
+   - Khởi tạo mô hình RL với các tham số ngẫu nhiên.
+   - Đặt tỷ lệ cắt tỉa ban đầu cho tất cả các nhóm lớp là 0% (không cắt tỉa).
+
+2. **Lặp lại các bước sau:**
+   - **Bước 1: Quan sát trạng thái \(S_t\).**
+     - Thu thập thông tin về đặc điểm của từng nhóm lớp và hiệu suất hiện tại của mô hình.
+   - **Bước 2: Chọn hành động \(A_t\).**
+     - Tác nhân RL chọn tỷ lệ cắt tỉa cho từng nhóm lớp dựa trên chính sách hiện tại.
+   - **Bước 3: Thực hiện hành động.**
+     - Áp dụng tỷ lệ cắt tỉa \(A_t\) cho mô hình và đánh giá hiệu suất mới.
+   - **Bước 4: Nhận phần thưởng \(R_t\).**
+     - Tính toán phần thưởng dựa trên hiệu suất và tỷ lệ cắt tỉa.
+   - **Bước 5: Cập nhật mô hình RL.**
+     - Sử dụng thuật toán PPO để cập nhật chính sách của tác nhân.
+
+3. **Kết thúc huấn luyện:**
+   - Khi mô hình RL hội tụ, thu được một chính sách tối ưu để điều chỉnh tỷ lệ cắt tỉa cho từng nhóm lớp.
+
+---
+
+## **3. Kết hợp RL với SlimGPT**
+
+### **3.1. Tích hợp RL vào SlimGPT**
+- Thay thế chiến lược **Incremental Pruning Ratio** trong SlimGPT bằng mô hình RL.
+- Sử dụng RL để tự động điều chỉnh tỷ lệ cắt tỉa cho từng nhóm lớp thay vì sử dụng hàm logarit cố định.
+
+### **3.2. Ưu điểm của RL so với Incremental Pruning Ratio**
+- **Tính linh hoạt:** RL có thể điều chỉnh tỷ lệ cắt tỉa dựa trên đặc điểm của từng nhóm lớp, thay vì áp dụng một công thức cố định.
+- **Tối ưu hóa toàn cục:** RL có thể tận dụng thông tin toàn cục để đưa ra quyết định cắt tỉa tối ưu hơn.
+- **Khả năng mở rộng:** RL có thể được áp dụng cho các mô hình và nhiệm vụ khác nhau mà không cần thay đổi nhiều.
+
+---
+
+## **4. Thực nghiệm**
+
+### **4.1. Bộ dữ liệu và mô hình thử nghiệm**
+- **Mô hình:** LLaMA-7B, LLaMA-13B, hoặc các mô hình ngôn ngữ lớn khác.
+- **Bộ dữ liệu hiệu chuẩn:** C4, Alpaca, hoặc GPT4-Alpaca.
+- **Nhiệm vụ đánh giá:** WikiText2, Commonsense Reasoning, MMLU.
+
+### **4.2. So sánh hiệu suất**
+- So sánh hiệu suất của RL với chiến lược **Incremental Pruning Ratio** hiện tại của SlimGPT.
+- Đánh giá các chỉ số:
+  - **Perplexity (PPL):** Độ phức tạp ngôn ngữ.
+  - **Zero-shot performance:** Hiệu suất trên các nhiệm vụ suy luận không cần huấn luyện thêm.
+  - **Thời gian và tài nguyên:** Thời gian huấn luyện RL và tài nguyên GPU cần thiết.
+
+---
+
+## **5. Kết quả mong đợi**
+- Một mô hình RL có khả năng tự động điều chỉnh tỷ lệ cắt tỉa cho từng nhóm lớp, giảm thiểu suy giảm hiệu suất và tối ưu hóa tỷ lệ cắt tỉa.
+- Hiệu suất của mô hình sau khi cắt tỉa tương đương hoặc vượt trội so với SlimGPT hiện tại.
+- Khả năng mở rộng và áp dụng cho các mô hình và nhiệm vụ khác nhau.
+
+---
+
+## **6. Thách thức và hướng giải quyết**
+- **Thách thức 1:** Huấn luyện RL có thể tốn nhiều tài nguyên và thời gian.
+  - **Giải pháp:** Sử dụng các kỹ thuật tối ưu hóa như **Experience Replay** và **Parallel Training** để giảm thời gian huấn luyện.
+- **Thách thức 2:** RL có thể gặp khó khăn khi xử lý các mô hình rất lớn.
+  - **Giải pháp:** Áp dụng RL cho từng nhóm lớp nhỏ thay vì toàn bộ mô hình.
+
+---
+# SlimGPT 
+Là một phương pháp pruning có cấu trúc cho các mô hình ngôn ngữ lớn (LLMs) dựa trên framework Optimal Brain Surgeon (OBS). Phương pháp này bao gồm các điểm chính sau:
+
+1. Batched Greedy Pruning:
+- Sử dụng phân tích Cholesky nhóm để chọn các head tối ưu cho pruning trong các khối attention.
+- Áp dụng Dynamic Group Size cho FFN để đạt được kết quả pruning gần tối ưu và hiệu quả.
+
+2. Incremental Pruning Ratio:
+- Đề xuất chiến lược tỉ lệ pruning tăng dần theo logarit để giảm thiểu sự tích lũy lỗi trong quá trình pruning layer-wise.
+- Công thức: $r_i = r_0 + (r_n−1 − r_0) * log(i + 1) / log(n)$
+
+3. Quy trình thực hiện:
+- Chỉ cần một tập dữ liệu hiệu chuẩn ngẫu nhiên từ kho dữ liệu tiền huấn luyện.
+- Có thể nén mô hình chỉ với một GPU, vài trăm dữ liệu hiệu chuẩn và khoảng một giờ.
+- Phù hợp với tất cả các mô hình lớn dựa trên kiến trúc Transformer thông thường.
+
+4. Ưu điểm:
+- Giữ lại hầu hết hiệu suất của mô hình sau khi pruning.
+- Chi phí thấp, sử dụng tài nguyên ít và thời gian nén ngắn.
+- Có tính chuyển đổi tốt và áp dụng được cho nhiều mô hình khác nhau.
+
+5. Kết quả:
+- Vượt trội hơn các phương pháp hiện có trên các tác vụ đánh giá như language modeling và commonsense reasoning.
+- Hiệu quả đặc biệt rõ ràng khi tỉ lệ pruning cao (ví dụ: 50%).
