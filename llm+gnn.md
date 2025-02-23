@@ -77,7 +77,7 @@
 ---
 
 ### **3.2. Tạo graph embedding**
-- **Mục tiêu**: Chuyển đổi Knowledge Graph thành vector đại diện (graph embedding).
+- **Mục tiêu**: Chuyển đổi Knowledge Graph trích xuất từ câu hỏi của ngừoi dùng thành vector đại diện (graph embedding).
 - **Công việc cụ thể**:
   - Từ Knowledge Graph của câu hỏi, sử dụng GNN đã huấn luyện để tạo ra graph embedding.
   - Đảm bảo graph embedding phản ánh ngữ nghĩa pháp luật của câu hỏi.
